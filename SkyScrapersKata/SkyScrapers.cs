@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace SkyScrapersKata
 {
     public class Skyscrapers
     {
+        public static int GridSize { get; set; }
+
         public static int[][] SolvePuzzle(int[] clues)
         {
-            var rows = RowUtilities.Rows.Select(x => x.ToArray()).ToList();
+            GridSize = clues.Length / 4;
+
+            var rows = RowUtilities.GenerateRows(GridSize).Select(x => x.ToArray()).ToList();
 
             var grid = BuildGrid(new List<int[]>(), rows, clues);
 
@@ -17,12 +22,12 @@ namespace SkyScrapersKata
 
         public static GridMetadata BuildGrid(List<int[]> grid, List<int[]> rows, int[] clues)
         {
-            if (grid.Count == 4)
+            if (grid.Count == GridSize)
             {
                 var side = 0;
                 for (int i = 0; i < clues.Length; i++)
                 {
-                    var position = i % 4;
+                    var position = i % GridSize;
                     if (position == 0) side++;
                     var check = IsGridValidForClue(position, side, clues[i], grid);
                     if (!check)
@@ -38,11 +43,7 @@ namespace SkyScrapersKata
                 var permutation = new List<int[]>();
                 permutation.AddRange(grid);
                 permutation.Add(row);
-                var leftOvers = rows.Where(x =>
-                    x[0] != row[0] &&
-                    x[1] != row[1] &&
-                    x[2] != row[2] &&
-                    x[3] != row[3]
+                var leftOvers = rows.Where(x => IsRowStillAllowed(x, row)
                     ).ToList();
                 var metadata = BuildGrid(permutation, leftOvers, clues);
                 if (metadata.IsValid)
@@ -51,6 +52,15 @@ namespace SkyScrapersKata
                 }
             }
             return new GridMetadata { IsValid = false };
+        }
+
+        private static bool IsRowStillAllowed(int[] x, int[] row)
+        {
+            for (int i = 0; i < row.Length; i++)
+            {
+                if (x[i] == row[i]) return false;
+            }
+            return true;
         }
 
         private static bool IsGridValidForClue(int position, int side, int clue, List<int[]> grid)
@@ -65,13 +75,13 @@ namespace SkyScrapersKata
             {
                 return clue == RowUtilities.CountVisibleScrapers(grid[position].Reverse().ToList());
             }
+            var offset = GridSize - 1;
             if (side == 3)
             {
-                var column = grid.Select(x => x[3 - position]).Reverse().ToList();
+                var column = grid.Select(x => x[offset - position]).Reverse().ToList();
                 return clue == RowUtilities.CountVisibleScrapers(column);
             }
-
-            return clue == RowUtilities.CountVisibleScrapers(grid[3 - position].ToList());
+            return clue == RowUtilities.CountVisibleScrapers(grid[offset - position].ToList());
         }
     }
 
@@ -83,16 +93,10 @@ namespace SkyScrapersKata
 
     public static class RowUtilities
     {
-        static RowUtilities()
-        {
-            var elements = new List<int> { 1, 2, 3, 4 };
-            Rows = GenerateRows(elements);
-        }
-
-        public static List<List<int>> GetPossibleRows(int visibleScrapers)
+        public static List<List<int>> GetPossibleRows(int visibleScrapers, int gridSize = 4)
         {
 
-            return Rows.Where(x => CountVisibleScrapers(x) == visibleScrapers).ToList();
+            return GenerateRows(gridSize).Where(x => CountVisibleScrapers(x) == visibleScrapers).ToList();
         }
 
         public static int CountVisibleScrapers(List<int> row)
@@ -111,7 +115,11 @@ namespace SkyScrapersKata
 
         }
 
-        public static List<List<int>> Rows;
+        public static List<List<int>> GenerateRows(int gridSize)
+        {
+            var elements = Enumerable.Range(1, gridSize).ToList();
+            return GenerateRows(elements);
+        }
 
         public static List<List<int>> GenerateRows(List<int> elements)
         {

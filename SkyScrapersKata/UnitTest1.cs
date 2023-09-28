@@ -40,7 +40,7 @@ namespace SkyScrapersKata
         [Test]
         public void GenerateRowsTest()
         {
-            Assert.That(RowUtilities.Rows.Count(), Is.EqualTo(24));
+            Assert.That(RowUtilities.GenerateRows(4).Count(), Is.EqualTo(24));
         }
 
         [TestCaseSource(nameof(ScraperCases))]
@@ -92,7 +92,7 @@ namespace SkyScrapersKata
                                     new []{4, 2, 1, 3},
                                     new []{3, 4, 2, 1},
                                     new []{2, 1, 3, 4}};
-
+            Skyscrapers.GridSize = 4;
             var grid = Skyscrapers.BuildGrid(new List<int[]>(), rows, clues);
 
             Assert.That(grid.IsValid, Is.True);
@@ -124,6 +124,7 @@ namespace SkyScrapersKata
                                     new []{3, 4, 2, 1},
                                     new []{2, 1, 3, 4}};
 
+            Skyscrapers.GridSize = 4;
             var grid = Skyscrapers.BuildGrid(new List<int[]>(), rows, clues);
 
             Assert.That(grid.IsValid, Is.True);
@@ -138,14 +139,14 @@ namespace SkyScrapersKata
                                 1, 2, 2, 3,
                                 3, 2, 1, 3};
 
-            var rows = RowUtilities.Rows.Select(x => x.ToArray()).ToList();
+            var rows = RowUtilities.GenerateRows(4).Select(x => x.ToArray()).ToList();
 
             var expected = new List<int[]>{
                                     new []{1, 3, 4, 2},
                                     new []{4, 2, 1, 3},
                                     new []{3, 4, 2, 1},
                                     new []{2, 1, 3, 4}};
-
+            Skyscrapers.GridSize = 4;
             var grid = Skyscrapers.BuildGrid(new List<int[]>(), rows, clues);
 
             Assert.That(grid.IsValid, Is.True);
